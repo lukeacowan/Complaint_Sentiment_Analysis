@@ -14,7 +14,7 @@ library(DT)
 library(zoo)
 rm(list = ls())
 
-setwd("C:/Users/lukec/OneDrive/Documents/data332/sentiment_analysis_project/data")
+setwd("C:/Users/lukec/OneDrive/Documents/data332/sentiment_analysis_project/Complaint_Sentiment_Analysis/data")
 
 raw_data <- readRDS(file = "Consumer_Complaints.rds")
 
@@ -24,7 +24,8 @@ my_data <- raw_data%>%
   dplyr::select("Product", "Sub.product", "Issue", "Sub.issue", "Consumer.complaint.narrative",
                 "Company", "State",  "Date.sent.to.company", 
                 "Company.response.to.consumer", "Timely.response.") %>%
-  dplyr::rename("Timely.response" = "Timely.response.")
+  dplyr::rename("Timely.response" = "Timely.response.") %>%
+  dplyr::rename("Date.sent" = "Date.sent.to.company")
 
 #identifying potential invalid states
 states <- my_data %>%
