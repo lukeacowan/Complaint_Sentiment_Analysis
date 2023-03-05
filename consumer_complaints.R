@@ -25,7 +25,8 @@ my_data <- raw_data%>%
                 "Company", "State",  "Date.sent.to.company", 
                 "Company.response.to.consumer", "Timely.response.") %>%
   dplyr::rename("Timely.response" = "Timely.response.") %>%
-  dplyr::rename("Date.sent" = "Date.sent.to.company")
+  dplyr::rename("Date.sent" = "Date.sent.to.company") %>%
+  dplyr::rename("Company.response" = "Company.response.to.consumer")
 
 #identifying potential invalid states
 states <- my_data %>%
