@@ -180,13 +180,6 @@ date_sent <- setDT(valid_data) %>%
 #removing unnecessary columns and displaying distinct values
 date_sent <- unique(date_sent[,.(Year.sent, Month.sent, Product, Year.month, num_complaints)])
 
-ggplot(date_sent, aes(x = Year.month, y = num_complaints, group = Product))+
-  geom_line(aes(colour = Product), lwd=1.0) + 
-  xlab("Decade") + 
-  ylab("Proportion of Total Ladybugs Found") + 
-  ggtitle("Proportion of Ladybugs Found by Decade") +
-  theme(axis.text.x = element_text(angle = 270, hjust = 1))
-
 #shiny app visualization
 ui<-fluidPage( 
   
