@@ -73,7 +73,7 @@ sentiment_consumer <- narrative_text %>%
   filter(sentiment %in% c("negative", "sadness", "anger")) %>%
 ```
 
-4. Appended the bing lexicon in three separate data frames to calculate sentiment values related to companies, products, and states.
+4. Appended the bing lexicon in three separate data frames to calculate sentiment values related to companies, products, and states
 ```
 company_sentiment <- narrative_text %>%
   inner_join(get_sentiments("bing"))
@@ -84,10 +84,22 @@ product_sentiment <- narrative_text %>%
 state_sentiment <- narrative_text %>%
   inner_join(get_sentiments("bing"))
 ```
+
+5. Converted Date.sent column to date format from character, separated and concatenated month and year values, grouped num_complaints by designated columns, and displayed distinct values by relevant rows
+```
+date_sent <- setDT(valid_data) %>%  
+  .[,Date.sent := as.Date(Date.sent, format = "%m/%d/%Y")] %>%
+  .[,Year.sent := year(Date.sent)] %>%
+  .[,Month.sent := month(Date.sent)] %>%
+  .[,Year.month := ifelse(nchar(Month.sent) == 2, paste0(Year.sent, Month.sent), paste0(Year.sent, "0",Month.sent))] %>%
+  .[,num_complaints := .N, keyby = .(Year.sent, Month.sent, Product)]
+ 
+  date_sent <- unique(date_sent[,.(Year.sent, Month.sent, Product, Year.month, num_complaints)]) 
+```
 ---
 
 # Data Analysis :mag:
-1. Which words appered most often in the consumer narratives?
+1. Which words appeared most often in the consumer narratives?
 - Used complaint analysis df (no lexicon applied) for this in order to get a true idea of the most common words--words that were not present in the lexicon would not be displayed in the visualization if sentiment analysis was utilized
 ```
 wordcloud(
@@ -100,7 +112,7 @@ wordcloud(
 <img src="wordcloud.png"> 
 
 - Account, credit, payment, bank, and loan are the 5 most common words.
-- 2015 is the only year present within the wordcloud despite 5 years worth of data being included in the dataset (December 2011-2016)--leads me to infer 2015 was the year with the most complaints submitted.
+- 2015 is the only year present within the wordcloud despite 5 years worth of data being included in the dataset (December 2011 - November 2016)--leads me to infer 2015 was the year with the most complaints submitted.
 - The majority of words displayed are not overtly or inherently negative.
 
 2. Which words related to the sentiments of "negative", "anger", and "sadness" appear most often?
@@ -169,4 +181,24 @@ Using plotly, I created a map (that is slightly more interactive in r) for the d
 - For this reason, the western Midwest states and Mountain states all have relatively high overall sentiment values due to being sparsely populated.
 - California, Florida, Texas, New York, and Georgia are the five states with the lowest sentiment scores.
 
+6. How did the number of complaints submitted by product change over time?
+- I chose to display this information within a shiny app. Important code for setting up the data selection interface and collecting inputs from users is included below:
+```
+fluidRow(
+    column(2,
+           selectizeInput('Product_choice', 'Choose Product', date_sent$Product, multiple = TRUE, selected = "Credit     card"),
+           selectInput('Start_date', 'Choose Start Date', date_sent$Year.month),
+           selectInput('End_date', 'Choose End Date', date_sent$Year.month),
+           #used to display results for desired inputs
+           actionButton("Button", "Go")
+ 
+  observeEvent(input$Button, {  
+  date_sent <- date_sent[Product %in% input$Product_choice]
+  date_sent <- date_sent[between(as.numeric(Year.month), input$Start_date, input$End_date)]
+```
+This was the basis of the code which was used to produce the following visualization (when all products and month values are included):
 
+<img src="product_complaints_by_month.png"> <br>
+- This dynamic visualization is great for analyzing consumer complaint trends over time by product; however, it is not very good for identifying specific values one might be interested in due to the small date values on the x-axis
+- Mortgages were the product that the most complaints were submitted for. Credit reporting and debt collection products came close or even surpassed mortgages during several months, but mortgages consistently prompted the most issues or consumer submissions within this five year period.
+- The number of total complaints submitted remained quite consistent over the timeline of this dataset apart from late 2013 - early 2014 when either substantially more credit reporting and debt collection complaints were submitted or more data was collected regarding complaints of these types.
